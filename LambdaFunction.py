@@ -8,18 +8,18 @@ import logging
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
-# DynamoDB-Client und Tabelle aus Umgebungsvariablen
+# DynamoDB-Client und entsprechende Tabelle
 dynamodb = boto3.resource('dynamodb')
-table_name = os.environ.get('DYNAMODB_TABLE', 'Hier Tabellenname')
+table_name = os.environ.get('DYNAMODB_TABLE', 'actorTable') 
 table = dynamodb.Table(table_name)
 
-# Pfade aus Umgebungsvariablen
-path_status = os.environ.get('API_PATH_STATUS', '/hier Path')
-path_value = os.environ.get('API_PATH_VALUE', '/hier Path')
-path_all = os.environ.get('API_PATH_ALL', '/hier Path')
+# Pfade aus API Gateway
+path_status = os.environ.get('API_PATH_STATUS', '/status') 
+path_value = os.environ.get('API_PATH_VALUE', '/actor') 
+path_all = os.environ.get('API_PATH_ALL', '/all')
 
-# Primärschlüssel aus Umgebungsvariablen
-primary_key = os.environ.get('DYNAMODB_PRIMARY_KEY', 'Hier Partition Key')
+# Primärschlüssel von DynamoDB Tabelle
+primary_key = os.environ.get('DYNAMODB_PRIMARY_KEY', 'ID')
 
 def lambda_handler(event, context):
     logger.info(f"Received event: {json.dumps(event)}")
@@ -48,7 +48,6 @@ def lambda_handler(event, context):
             elif http_method == 'POST':
                 if not body or primary_key not in body:
                     return create_response(400, {'error': f'{primary_key} and other required fields are missing.'})
-                body[primary_key] = int(body[primary_key]) if isinstance(body[primary_key], str) and body[primary_key].isdigit() else body[primary_key]
                 return add_value(body)
             
             # DELETE
@@ -64,10 +63,6 @@ def lambda_handler(event, context):
             # GET
             if http_method == 'GET':
                 return get_all()
-            
-            # DELETE
-            elif http_method == 'DELETE':
-                return delete_all()
 
         return create_response(404, {'error': 'Invalid path or HTTP method.'})
 
@@ -88,17 +83,10 @@ def create_response(status_code, body, content_type='application/json', is_base6
         response['isBase64Encoded'] = True
     return response
 
-def parse_query_param(query_params, key, to_int=False):
-
+def parse_query_param(query_params, key):
     if not query_params or key not in query_params:
         return None
-    value = query_params[key]
-    if to_int:
-        try:
-            return int(value)
-        except ValueError:
-            return None
-    return value 
+    return query_params[key]
 
 def decimal_to_native(obj):
     if isinstance(obj, Decimal):
@@ -122,7 +110,7 @@ def get_value(key_value):
 def add_value(value):
     try:
         table.put_item(Item=value)
-        return create_response(201, {'message': f'Item added successfully.', 'item': value})
+        return create_response(201, {'message': 'Item added successfully.', 'item': value})
     except Exception as e:
         logger.error(f"Error in add_value: {e}")
         return create_response(500, {'error': str(e)})
@@ -148,20 +136,4 @@ def get_all():
         return create_response(200, {'items': all_items})
     except Exception as e:
         logger.error(f"Error in get_all: {e}")
-        return create_response(500, {'error': str(e)})
-
-def delete_all():
-    try:
-        scan_kwargs = {}
-        while True:
-            response = table.scan(**scan_kwargs)
-            with table.batch_writer() as batch:
-                for item in response.get('Items', []):
-                    batch.delete_item(Key={primary_key: item[primary_key]})
-            if 'LastEvaluatedKey' not in response:
-                break
-            scan_kwargs['ExclusiveStartKey'] = response['LastEvaluatedKey']
-        return create_response(200, {'message': 'All items deleted successfully.'})
-    except Exception as e:
-        logger.error(f"Error in delete_all: {e}")
         return create_response(500, {'error': str(e)})
