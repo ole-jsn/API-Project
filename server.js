@@ -19,7 +19,7 @@ app.post('/api/chat', async (req, res) => {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer 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`
+                'Authorization': `Bearer //API KEY`
             },
             body: JSON.stringify({
                 model: 'gpt-4o-mini',
@@ -75,7 +75,7 @@ app.post('/api/chat', async (req, res) => {
 
         //Filter: Webhook-Auslösung
         if (jsonData.Nationalität === "Mexiko" && jsonData.Frisur === "Locken") {
-            const webhookResponse = await fetch('https://public.lindy.ai/api/v1/webhooks/lindy/097607b7-b35c-4816-8a8d-a983b79802c5', {
+            const webhookResponse = await fetch('#WEBHOOK URL ZU LINDY AI', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(jsonData)
@@ -88,7 +88,7 @@ app.post('/api/chat', async (req, res) => {
         }
 
         // Daten an AWS DynamoDB senden
-        const awsResponse = await fetch('https://b21roq8qrb.execute-api.us-east-1.amazonaws.com/creation/actor', {
+        const awsResponse = await fetch('API URL ZU AWS', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(jsonData)
