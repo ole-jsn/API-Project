@@ -26,3 +26,7 @@ API Projekt mit AWS, OpenAI und LindyAI Integrierung (geschrieben mit JavaScript
 
 - Beim Teil mit dem Code und der API Verbindung mit AWS musste ich oft debuggen (viel ChatGPT verwendet), der Teil mit Lindy AI ging sehr unbeschwert.
 - Ich habe alle Schritte immer in Unterschritten geplant. Dafür nutzte ich Notion. Für Recherche und Problemlösung habe ich ChatGPT und teilweise YT und Google verwendet.
+
+  ## Hinweis
+  - Zu den Code Files kommen in meinem Code natürlich noch die node_moudles für den Proxy-Server hinzu.
+  - Der Python Code dient nur zur Veranschaulichung. Er wird nicht im Code benötigt, sondern muss in AWS, als Lambda Function eingebettet werden.
